@@ -21,12 +21,12 @@ runs:
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
       run: |
-        echo "::set-env name=GCP_PROJECT::${{ secrets.GCP_PROJECT_STAGING }}"
+        echo "GCP_PROJECT=${{ secrets.GCP_PROJECT_STAGING }}" >> $GITHUB_ENV
       shell: bash
     - name: Set env to production
       if: endsWith(github.ref, '/main')
       run: |
-        echo "::set-env name=GCP_PROJECT::${{ secrets.GCP_PROJECT }}"
+        echo "GCP_PROJECT=${{ secrets.GCP_PROJECT }}" >> $GITHUB_ENV
       shell: bash
     - name: Setup Google Cloud Tools Staging
       if: endsWith(github.ref, '/development')
