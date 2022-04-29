@@ -1,0 +1,63 @@
+name: 'Deploy'
+description: 'Creates docker containers and applies Kubernetes changes.'
+inputs:
+  version:
+    description: 'The version generated in the prepare step'
+    required: true 
+  project-path:  # id of input
+    description: 'Path to the deployable project root.'
+    required: true
+  container-id:
+    description: 'The ID for the container in the repository.'
+    required: true
+runs:
+  using: "composite"
+  if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
+  steps:
+    - uses: actions/download-artifact@master
+      with:
+        name: publish
+        path: .
+    - name: Set env to staging
+      if: endsWith(github.ref, '/development')
+      run: |
+        echo "::set-env name=GCP_PROJECT::${{ secrets.GCP_PROJECT_STAGING }}"
+    - name: Set env to production
+      if: endsWith(github.ref, '/main')
+      run: |
+        echo "::set-env name=GCP_PROJECT::${{ secrets.GCP_PROJECT }}"
+    - name: Setup Google Cloud Tools Staging
+      if: endsWith(github.ref, '/development')
+      uses: google-github-actions/setup-gcloud@v0.3.0
+      with:
+        project_id: ${{ secrets.GCP_PROJECT_STAGING }}
+        service_account_email: ${{ secrets.GCP_EMAIL_STAGING }}
+        service_account_key: ${{ secrets.GCP_KEY_STAGING }}
+        export_default_credentials: true
+    - name: Setup Google Cloud Tools Production
+      if: endsWith(github.ref, '/main')
+      uses: google-github-actions/setup-gcloud@v0.3.0
+      with:
+        project_id: ${{ secrets.GCP_PROJECT }}
+        service_account_email: ${{ secrets.GCP_DOCKER_EMAIL }}
+        service_account_key: ${{ secrets.GCP_DOCKER_KEY }}
+        export_default_credentials: true
+    - name: Setup Docker
+      run: |
+        gcloud auth configure-docker us-central1-docker.pkg.dev
+    - name: Gateway Docker Build, Tag and Push
+      run: |
+        docker build --build-arg CONFIGURATION=Staging -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/tracstar:${{ inputs.version }} ./${{ inputs.project-path }}
+        docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/tracstar:${{ inputs.version }}
+    - name: Replace variables in Kubernetes config
+      uses: TracPlus/replace-action@master
+      with:
+        files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
+        replacements: '@VERSION=${{ inputs.version }}'
+    # Get the GKE credentials so we can deploy to the cluster
+    - run: |-
+        gcloud container clusters get-credentials main --zone us-central1-a --project ${{ env.GCP_PROJECT }}
+    # Apply kubernetes changes.
+    - name: Deploy Gateway
+      run: |-
+        kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
