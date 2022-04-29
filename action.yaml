@@ -10,6 +10,24 @@ inputs:
   container-id:
     description: 'The ID for the container in the repository.'
     required: true
+  gcp-staging-id:
+    description: 'Project ID for Staging environment.'
+    required: true 
+  gcp-staging-key:
+    description: 'Key for Staging environment.'
+    required: true
+  gcp-staging-email:
+    description: 'Account email for Staging environment.'
+    required: true
+  gcp-production-id:
+    description: 'Project ID for Production environment.'
+    required: true 
+  gcp-production-key:
+    description: 'Key for Production environment.'
+    required: true
+  gcp-production-email:
+    description: 'Account email for Production environment.'
+    required: true   
 runs:
   using: "composite"
   if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
@@ -32,17 +50,17 @@ runs:
       if: endsWith(github.ref, '/development')
       uses: google-github-actions/setup-gcloud@v0.3.0
       with:
-        project_id: ${{ secrets.GCP_PROJECT_STAGING }}
-        service_account_email: ${{ secrets.GCP_EMAIL_STAGING }}
-        service_account_key: ${{ secrets.GCP_KEY_STAGING }}
+        project_id: ${{ inputs.gcp-staging-id }}
+        service_account_email: ${{ inputs.gcp-staging-email }}
+        service_account_key: ${{ inputs.gcp-staging-key }}
         export_default_credentials: true
     - name: Setup Google Cloud Tools Production
       if: endsWith(github.ref, '/main')
       uses: google-github-actions/setup-gcloud@v0.3.0
       with:
-        project_id: ${{ secrets.GCP_PROJECT }}
-        service_account_email: ${{ secrets.GCP_DOCKER_EMAIL }}
-        service_account_key: ${{ secrets.GCP_DOCKER_KEY }}
+        project_id: ${{ inputs.gcp-production-id }}
+        service_account_email: ${{ inputs.gcp-production-email }}
+        service_account_key: ${{ inputs.gcp-production-key }}
         export_default_credentials: true
     - name: Setup Docker
       run: |
