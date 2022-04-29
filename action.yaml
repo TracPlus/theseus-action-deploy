@@ -66,10 +66,10 @@ runs:
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
-    - name: Gateway Docker Build, Tag and Push
+    - name: Docker Build, Tag and Push
       run: |
-        docker build --build-arg CONFIGURATION=Staging -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/tracstar:${{ inputs.version }} ./${{ inputs.project-path }}
-        docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/tracstar:${{ inputs.version }}
+        docker build --build-arg CONFIGURATION=Staging -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} ./${{ inputs.project-path }}
+        docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
       shell: bash
     - name: Replace variables in Kubernetes config
       uses: TracPlus/replace-action@master
