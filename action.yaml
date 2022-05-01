@@ -69,7 +69,7 @@ runs:
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
-    - run: echo ${{ env.GCP_PROJECT }} >> output
+    - run: echo us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} >> output
       shell: bash
     - uses: actions/upload-artifact@master
       with:
