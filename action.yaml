@@ -36,6 +36,13 @@ runs:
       with:
         name: publish
         path: .
+    - run: echo ${{ inputs.version }} >> version-deploy
+      shell: bash
+    - uses: actions/upload-artifact@master
+      with:
+        name: temp-debug-version-deploy
+        path: version-deploy
+        retention-days: 1
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
       run: |
