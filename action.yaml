@@ -70,6 +70,7 @@ runs:
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
     - run: echo ${{ env.GCP_PROJECT }} >> output
+      shell: bash
     - uses: actions/upload-artifact@master
       with:
         name: temp-debug
