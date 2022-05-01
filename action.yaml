@@ -69,6 +69,12 @@ runs:
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
+    - run: echo ${{ env.GCP_PROJECT }} >> output
+    - uses: actions/upload-artifact@master
+      with:
+        name: temp-debug
+        path: output
+        retention-days: 1
     - name: Docker Build, Tag and Push
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |
