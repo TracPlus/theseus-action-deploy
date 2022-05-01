@@ -94,7 +94,7 @@ runs:
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-        replacements: '@VERSION=${{ inputs.version }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }}'
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
