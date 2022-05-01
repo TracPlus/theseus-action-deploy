@@ -35,7 +35,7 @@ runs:
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       with:
         name: publish
-        path: .
+        path: ${{ inputs.project-path }}
     - run: echo ${{ inputs.version }} >> version-deploy
       shell: bash
     - uses: actions/upload-artifact@master
