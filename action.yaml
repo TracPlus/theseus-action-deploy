@@ -36,13 +36,6 @@ runs:
       with:
         name: publish
         path: ${{ inputs.project-path }}
-    - run: echo ${{ inputs.version }} >> version-deploy
-      shell: bash
-    - uses: actions/upload-artifact@master
-      with:
-        name: temp-debug-version-deploy
-        path: version-deploy
-        retention-days: 1
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
       run: |
@@ -76,13 +69,6 @@ runs:
       run: |
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
-    - run: echo us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} >> output
-      shell: bash
-    - uses: actions/upload-artifact@master
-      with:
-        name: temp-debug
-        path: output
-        retention-days: 1
     - name: Docker Build, Tag and Push
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |
