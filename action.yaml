@@ -19,6 +19,9 @@ inputs:
   gcp-staging-email:
     description: 'Account email for Staging environment.'
     required: true
+  gcp-staging-ip:
+    description: 'IP if static required for service.'
+    required: false
   gcp-production-id:
     description: 'Project ID for Production environment.'
     required: true 
@@ -27,7 +30,10 @@ inputs:
     required: true
   gcp-production-email:
     description: 'Account email for Production environment.'
-    required: true   
+    required: true
+  gcp-production-ip:
+    description: 'IP if static required for service.'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -75,12 +81,18 @@ runs:
         docker build --build-arg CONFIGURATION=${{ env.CONFIGURATION }} -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} ./${{ inputs.project-path }}
         docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
       shell: bash
-    - name: Replace variables in Kubernetes config
-      if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
+    - name: Replace variables in production Kubernetes config
+      if: endsWith(github.ref, '/main')
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }}'
+    - name: Replace variables in staging Kubernetes config
+      if: endsWith(github.ref, '/development')
+      uses: TracPlus/replace-action@master
+      with:
+        files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }}'
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
