@@ -40,6 +40,12 @@ inputs:
   production-new-relic-app-id:
     description: 'ID of the application in New Relic.'
     required: false
+  new-relic-account-id:
+    description: 'ID of the account in New Relic.'
+    required: false
+  new-relic-api-key:
+    description: 'New Relic API key.'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -135,7 +141,7 @@ runs:
       if: endsWith(github.ref, '/main')
       uses: newrelic/deployment-marker-action@v1.0.0
       with:
-        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
-        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+        apiKey: ${{ inputs.new-relic-api-key }}
+        accountId: ${{ inputs.new-relic-account-id }}
         applicationId: ${{ inputs.production-new-relic-app-id }}
         revision: ${{ inputs.version }}
