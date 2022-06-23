@@ -121,8 +121,8 @@ runs:
       if: endsWith(github.ref, '/development')
       uses: newrelic/deployment-marker-action@v1.0.0
       with:
-        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
-        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+        apiKey: ${{ inputs.new-relic-api-key }}
+        accountId: ${{ inputs.new-relic-account-id }}
         applicationId: ${{ inputs.staging-new-relic-app-id }}
         revision: ${{ inputs.version }}
     - uses: trstringer/manual-approval@v1
