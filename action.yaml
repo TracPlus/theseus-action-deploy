@@ -129,7 +129,7 @@ runs:
       if: endsWith(github.ref, '/main')
       with:
         secret: ${{ github.TOKEN }}
-        approvers: user1,user2
+        approvers: n00begon,swishy,NicBathgate,lmolteno,ncrountree,tracplus-hpaterson,marikit-stroud,michaelmillertp
         minimum-approvals: 1
         issue-title: "Deploying ${{ inputs.version }} to production"
     - name: Deploy Production
