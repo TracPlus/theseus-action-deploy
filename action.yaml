@@ -34,6 +34,12 @@ inputs:
   gcp-production-ip:
     description: 'IP if static required for service.'
     required: false
+  staging-new-relic-app-id:
+    description: 'ID of the application in New Relic.'
+    required: false
+  production-new-relic-app-id:
+    description: 'ID of the application in New Relic.'
+    required: false
 runs:
   using: "composite"
   steps:
@@ -44,13 +50,13 @@ runs:
         path: ${{ inputs.project-path }}
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
-      run: |
+      run: |-
         echo "GCP_PROJECT=${{ inputs.gcp-staging-id }}" >> $GITHUB_ENV
         echo "CONFIGURATION=Staging" >> $GITHUB_ENV
       shell: bash
     - name: Set env to production
       if: endsWith(github.ref, '/main')
-      run: |
+      run: |-
         echo "GCP_PROJECT=${{ inputs.gcp-production-id }}" >> $GITHUB_ENV
         echo "CONFIGURATION=Release" >> $GITHUB_ENV
       shell: bash
@@ -72,12 +78,12 @@ runs:
         export_default_credentials: true
     - name: Setup Docker
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
-      run: |
+      run: |-
         gcloud auth configure-docker us-central1-docker.pkg.dev
       shell: bash
     - name: Docker Build, Tag and Push
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
-      run: |
+      run: |-
         docker build --build-arg CONFIGURATION=${{ env.CONFIGURATION }} -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} ./${{ inputs.project-path }}
         docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
       shell: bash
@@ -100,8 +106,36 @@ runs:
         gcloud container clusters get-credentials main --zone us-central1-a --project ${{ env.GCP_PROJECT }}
       shell: bash
     # Apply kubernetes changes.
-    - name: Deploy Gateway
-      if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
+    - name: Deploy Staging
+      if: endsWith(github.ref, '/development')
       run: |-
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
+    - name: New Relic Staging Application Deployment Marker
+      if: endsWith(github.ref, '/development')
+      uses: newrelic/deployment-marker-action@v1.0.0
+      with:
+        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+        applicationId: ${{ inputs.staging-new-relic-app-id }}
+        revision: ${{ inputs.version }}
+    - uses: trstringer/manual-approval@v1
+      if: endsWith(github.ref, '/main')
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: user1,user2
+        minimum-approvals: 1
+        issue-title: "Deploying ${{ inputs.version }} to production"
+    - name: Deploy Production
+      if: endsWith(github.ref, '/main')
+      run: |-
+        kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
+      shell: bash
+    - name: New Relic Production Application Deployment Marker
+      if: endsWith(github.ref, '/main')
+      uses: newrelic/deployment-marker-action@v1.0.0
+      with:
+        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+        accountId: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+        applicationId: ${{ inputs.production-new-relic-app-id }}
+        revision: ${{ inputs.version }}
