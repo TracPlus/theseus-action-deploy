@@ -127,7 +127,7 @@ runs:
       shell: bash
     - name: Deploy to Cloud Run
       if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} != 'true'
-      id: deploy
+      id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
         service: ${{ inputs.container-id }}
@@ -155,7 +155,7 @@ runs:
       shell: bash
     - name: Deploy to Cloud Run
       if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} != 'true'
-      id: deploy
+      id: deploy-production
       uses: google-github-actions/deploy-cloudrun@v0
       with:
         service: ${{ inputs.container-id }}
