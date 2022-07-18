@@ -105,13 +105,13 @@ runs:
         docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
       shell: bash
     - name: Replace variables in production Kubernetes config
-      if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} == 'true'
+      if: ${{ (endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
         replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }}'
     - name: Replace variables in staging Kubernetes config
-      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} == 'true'
+      if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
@@ -124,12 +124,12 @@ runs:
       shell: bash
     # Apply kubernetes changes.
     - name: Deploy Staging
-      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} == 'true'
+      if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'true') }}
       run: |-
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} == 'false'
+      if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'false') }}
       id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
@@ -152,12 +152,12 @@ runs:
         minimum-approvals: 1
         issue-title: "Deploying ${{ inputs.version }} to production"
     - name: Deploy Production
-      if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} == 'true'
+      if: ${{ (endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
       run: |-
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} == 'false'
+      if: ${{ (endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false') }}
       id: deploy-production
       uses: google-github-actions/deploy-cloudrun@v0
       with:
