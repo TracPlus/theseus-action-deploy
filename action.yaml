@@ -127,7 +127,6 @@ runs:
       shell: bash
     - name: Deploy to Cloud Run
       if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} != 'true'
-      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} != 'true'
       id: deploy
       uses: google-github-actions/deploy-cloudrun@v0
       with:
