@@ -57,6 +57,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - run: |
+        echo ${{ inputs.kubernetes }}
+      shell: bash
     - uses: actions/download-artifact@master
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       with:
@@ -126,7 +129,7 @@ runs:
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} != 'true'
+      if: endsWith(github.ref, '/development') && ${{ inputs.kubernetes }} == 'false'
       id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
@@ -154,7 +157,7 @@ runs:
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} != 'true'
+      if: endsWith(github.ref, '/main') && ${{ inputs.kubernetes }} == 'false'
       id: deploy-production
       uses: google-github-actions/deploy-cloudrun@v0
       with:
