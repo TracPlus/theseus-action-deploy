@@ -3,7 +3,7 @@ description: 'Creates docker containers and applies Kubernetes changes.'
 inputs:
   version:
     description: 'The version generated in the prepare step'
-    required: true 
+    required: true
   project-path:  # id of input
     description: 'Path to the deployable project root.'
     required: true
@@ -12,7 +12,7 @@ inputs:
     required: true
   gcp-staging-id:
     description: 'Project ID for Staging environment.'
-    required: true 
+    required: true
   gcp-staging-key:
     description: 'Key for Staging environment.'
     required: true
@@ -24,7 +24,7 @@ inputs:
     required: false
   gcp-production-id:
     description: 'Project ID for Production environment.'
-    required: true 
+    required: true
   gcp-production-key:
     description: 'Key for Production environment.'
     required: true
@@ -148,7 +148,7 @@ runs:
       if: endsWith(github.ref, '/main')
       with:
         secret: ${{ github.TOKEN }}
-        approvers: n00begon,swishy,NicBathgate,lmolteno,ncrountree,tracplus-hpaterson,marikit-stroud,michaelmillertp
+        approvers: n00begon,swishy,NicBathgate,lmolteno,ncrountree,marikit-stroud,michaelmillertp
         minimum-approvals: 1
         issue-title: "Deploying ${{ inputs.version }} to production"
     - name: Deploy Production
