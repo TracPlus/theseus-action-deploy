@@ -87,12 +87,14 @@ runs:
       if: endsWith(github.ref, '/development')
       uses: 'google-github-actions/auth@v1'
       with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS_STAGING }}'
+        workload_identity_provider: 'projects/493575278784/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
+        service_account: 'github-service-account@theseus-staging-347811.iam.gserviceaccount.com'
     - name: Google Authentication Production
       if: endsWith(github.ref, '/main')
       uses: 'google-github-actions/auth@v1'
       with:
-        credentials_json: '${{ secrets.GCP_CREDENTIALS_PRODUCTION }}'
+        workload_identity_provider: 'projects/590787499692/locations/global/workloadIdentityPools/github-actions/providers/github'
+        service_account: 'github-actions@u1-staging.iam.gserviceaccount.com'
     - name: Setup Google Cloud Tools Staging
       if: endsWith(github.ref, '/development')
       uses: google-github-actions/setup-gcloud@v1
