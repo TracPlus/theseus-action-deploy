@@ -83,22 +83,28 @@ runs:
         echo "GCP_PROJECT=${{ inputs.gcp-production-id }}" >> $GITHUB_ENV
         echo "CONFIGURATION=Release" >> $GITHUB_ENV
       shell: bash
+    - name: Google Authentication Staging
+      if: endsWith(github.ref, '/development')
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/493575278784/locations/global/workloadIdentityPools/github-actions/providers/github-actions'
+        service_account: 'github-service-account@theseus-staging-347811.iam.gserviceaccount.com'
+    - name: Google Authentication Production
+      if: endsWith(github.ref, '/main')
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/590787499692/locations/global/workloadIdentityPools/github-actions/providers/github'
+        service_account: 'github-actions@u1-staging.iam.gserviceaccount.com'
     - name: Setup Google Cloud Tools Staging
       if: endsWith(github.ref, '/development')
-      uses: google-github-actions/setup-gcloud@v0.3.0
+      uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ inputs.gcp-staging-id }}
-        service_account_email: ${{ inputs.gcp-staging-email }}
-        service_account_key: ${{ inputs.gcp-staging-key }}
-        export_default_credentials: true
     - name: Setup Google Cloud Tools Production
       if: endsWith(github.ref, '/main')
       uses: google-github-actions/setup-gcloud@v0.3.0
       with:
         project_id: ${{ inputs.gcp-production-id }}
-        service_account_email: ${{ inputs.gcp-production-email }}
-        service_account_key: ${{ inputs.gcp-production-key }}
-        export_default_credentials: true
     - name: Setup Docker
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |-
