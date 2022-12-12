@@ -105,6 +105,14 @@ runs:
       uses: google-github-actions/setup-gcloud@v0.3.0
       with:
         project_id: ${{ inputs.gcp-production-id }}
+    - name: Install GKE Authentication Plugin
+      run: |-
+        gcloud components install gke-gcloud-auth-plugin
+      shell: bash
+    - name: Export GKE Authentication Variable
+      run: |-
+        echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
+      shell: bash
     - name: Setup Docker
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |-
