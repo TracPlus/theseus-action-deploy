@@ -96,7 +96,7 @@ runs:
         workload_identity_provider: 'projects/590787499692/locations/global/workloadIdentityPools/github-actions/providers/github'
         service_account: 'github-actions@u1-staging.iam.gserviceaccount.com'
     - name: Setup Google Cloud Tools Staging
-      if: !endsWith(github.ref, '/main')
+      if: ${{ !endsWith(github.ref, '/main') }}
       uses: google-github-actions/setup-gcloud@v1
       with:
         project_id: ${{ inputs.gcp-staging-id }}
