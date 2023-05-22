@@ -40,6 +40,14 @@ inputs:
   production-new-relic-app-id:
     description: 'ID of the application in New Relic.'
     required: false
+  staging-replicas:
+    description: 'Number of Kubernetes replicas.'
+    default: 2
+    required: false
+  production-replicas:
+    description: 'Number of Kubernetes replica.'
+    default: 3
+    required: false
   new-relic-account-id:
     description: 'ID of the account in New Relic.'
     required: false
@@ -129,13 +137,13 @@ runs:
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }},@REPLICAS={{ inputs.production-replicas }}'
     - name: Replace variables in staging Kubernetes config
       if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }},@REPLICAS={{ inputs.staging-replicas }}'
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
