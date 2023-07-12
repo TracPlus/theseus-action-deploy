@@ -215,7 +215,7 @@ runs:
       if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
       run: |
         VERSION="${{ inputs.version }}"
-        gcloud app deploy --appyaml=${{ inputs.project-path }}/app.yaml --image-url=us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} --version=${VERSION//./-}
+        gcloud app deploy -q --appyaml=${{ inputs.project-path }}/app.yaml --image-url=us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} --version=${VERSION//./-}
       shell: bash
     - name: New Relic Staging Application Deployment Marker
       if: endsWith(github.ref, '/development')
