@@ -74,6 +74,38 @@ inputs:
     description: 'Name for the built artifact to be uploaded as.'
     required: false
     default: 'publish'
+  ams-connection-string:
+    description: 'AMS connection string production'
+    required: false
+    default: ''
+  ams-connection-string-staging:
+    description: 'AMS connection string staging'
+    required: false
+    default: ''
+  distress-connection-string:
+    description: 'Distress connection string production'
+    required: false
+    default: ''
+  distress-connection-string-staging:
+    description: 'Distress connection string staging'
+    required: false
+    default: ''
+  notifications-connection-string:
+    description: 'Notifications connection string production'
+    required: false
+    default: ''
+  notifications-connection-string-staging:
+    description: 'Notification connection string staging'
+    required: false
+    default: ''
+  tracstar-connection-string:
+    description: 'Tracstar connection string production'
+    required: false
+    default: ''
+  tracstar-connection-string-staging:
+    description: 'Tracstar connection string staging'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -152,13 +184,13 @@ runs:
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/app.yaml
-        replacements: '@NOTIFICATIONS_CONNECTION_STRING=${{ inputs.notifications-connection-string }},@AMS_CONNECTION_STRING=${{ inputs.sarwatch-connection-string }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string }}'
+        replacements: '@NOTIFICATIONS_CONNECTION_STRING=${{ inputs.notifications-connection-string }},@AMS_CONNECTION_STRING=${{ inputs.ams-connection-string }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string }}'
     - name: Staging AppEngine config transform
       if: ${{ (endsWith(github.ref, '/development')) && (inputs.cloudrun == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/app.yaml
-        replacements: '@NOTIFICATIONS_CONNECTION_STRING_STAGING=${{ inputs.notifications-connection-string-staging }},@AMS_CONNECTION_STRING=${{ inputs.sarwatch-connection-string-staging }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string-staging }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string-staging }}'
+        replacements: '@NOTIFICATIONS_CONNECTION_STRING_STAGING=${{ inputs.notifications-connection-string-staging }},@AMS_CONNECTION_STRING=${{ inputs.ams-connection-string-staging }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string-staging }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string-staging }}'
     # Get the GKE credentials, so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
