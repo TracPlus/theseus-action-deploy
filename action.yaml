@@ -40,6 +40,14 @@ inputs:
   production-new-relic-app-id:
     description: 'ID of the application in New Relic.'
     required: false
+  staging-replicas:
+    description: 'Number of Kubernetes replicas.'
+    default: 2
+    required: false
+  production-replicas:
+    description: 'Number of Kubernetes replica.'
+    default: 3
+    required: false
   new-relic-account-id:
     description: 'ID of the account in New Relic.'
     required: false
@@ -58,7 +66,7 @@ inputs:
     description: 'AppEngine deployment? Kubernetes is default.'
     required: false
     default: 'false'
-  cloudrun:
+ cloudrun:
     description: 'CloudRun deployment? Kubernetes is default.'
     required: false
     default: 'false'
@@ -124,7 +132,7 @@ runs:
     - name: Docker Build, Tag and Push
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |-
-        docker build --build-arg CONFIGURATION=${{ env.CONFIGURATION }} --build-arg TARGET=${{inputs.target}} -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} ./${{ inputs.project-path }}
+        docker build --build-arg CONFIGURATION=${{ env.CONFIGURATION }} --build-arg TARGET=${{inputs.target}} --build-arg PROJECT=${{ env.GCP_PROJECT }} -t us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} ./${{ inputs.project-path }}
         docker push us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
       shell: bash
     - name: Replace variables in production Kubernetes config
@@ -132,7 +140,7 @@ runs:
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-production-ip }},@REPLICAS=${{ inputs.production-replicas }}'
     - name: Replace variables in staging Kubernetes config
       if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'true') }}
       uses: TracPlus/replace-action@master
@@ -151,6 +159,7 @@ runs:
       with:
         files: ${{ inputs.project-path }}/app.yaml
         replacements: '@NOTIFICATIONS_CONNECTION_STRING_STAGING=${{ inputs.notifications-connection-string-staging }},@AMS_CONNECTION_STRING=${{ inputs.sarwatch-connection-string-staging }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string-staging }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string-staging }}'
+        replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }},@REPLICAS=${{ inputs.staging-replicas }}'
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
@@ -159,12 +168,12 @@ runs:
       shell: bash
     # Apply kubernetes changes.
     - name: Deploy to Kubernetes
-      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
       run: |
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: ${{ (endsWith(github.ref, '/development' || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.cloudrun == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.cloudrun == 'true') }}
       id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
@@ -172,7 +181,7 @@ runs:
         region: 'us-central1'
         image: us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
     - name: Deploy to AppEngine
-      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
       run: |
         echo ${{ inputs.project-path }}
         echo ${{ inputs.container-id }}
