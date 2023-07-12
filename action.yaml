@@ -58,7 +58,7 @@ inputs:
     description: 'AppEngine deployment? Kubernetes is default.'
     required: false
     default: 'false'
- cloudrun:
+  cloudrun:
     description: 'CloudRun deployment? Kubernetes is default.'
     required: false
     default: 'false'
@@ -139,6 +139,18 @@ runs:
       with:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
         replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }}'
+    - name: Production AppEngine config transform
+      if: ${{ (endsWith(github.ref, '/main')) && (inputs.cloudrun == 'true') }}
+      uses: TracPlus/replace-action@master
+      with:
+        files: ${{ inputs.project-path }}/app.yaml
+        replacements: '@NOTIFICATIONS_CONNECTION_STRING=${{ inputs.notifications-connection-string }},@AMS_CONNECTION_STRING=${{ inputs.sarwatch-connection-string }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string }}'
+    - name: Staging AppEngine config transform
+      if: ${{ (endsWith(github.ref, '/development')) && (inputs.cloudrun == 'true') }}
+      uses: TracPlus/replace-action@master
+      with:
+        files: ${{ inputs.project-path }}/app.yaml
+        replacements: '@NOTIFICATIONS_CONNECTION_STRING_STAGING=${{ inputs.notifications-connection-string-staging }},@AMS_CONNECTION_STRING=${{ inputs.sarwatch-connection-string-staging }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string-staging }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string-staging }}'
     # Get the GKE credentials so we can deploy to the cluster
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
