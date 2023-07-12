@@ -216,9 +216,6 @@ runs:
       run: |
         VERSION="${{ inputs.version }}"
         NO_DOT_VERSION="${VERSION//./-}"
-        echo $NO_DOT_VERSION
-        ls
-        ls ${{ inputs.project-path }}
         gcloud app deploy --appyaml=${{ inputs.project-path }}/app.yaml --image-url=us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} --version=$NO_DOT_VERSION
       shell: bash
     - name: New Relic Staging Application Deployment Marker
