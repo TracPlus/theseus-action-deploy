@@ -51,9 +51,17 @@ inputs:
     required: false
     default: 'linux-x64'
   kubernetes:
-    description: 'Kubernetes deployment? if not defaults to cloud run.'
+    description: 'Kubernetes deployment?'
     required: false
     default: 'true'
+  appengine:
+    description: 'AppEngine deployment? Kubernetes is default.'
+    required: false
+    default: 'false'
+ cloudrun:
+    description: 'CloudRun deployment? Kubernetes is default.'
+    required: false
+    default: 'false'
   artifact-name:
     description: 'Name for the built artifact to be uploaded as.'
     required: false
@@ -61,11 +69,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: |
-        echo ${{ inputs.kubernetes }}
-        echo ${{ inputs.container-id }}
-        echo ${{ inputs.project-path }}
-      shell: bash
     - uses: actions/download-artifact@master
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       with:
@@ -143,21 +146,26 @@ runs:
         gcloud container clusters get-credentials main --zone us-central1-a --project ${{ env.GCP_PROJECT }}
       shell: bash
     # Apply kubernetes changes.
-    - name: Deploy Staging
-      if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'true') }}
+    - name: Deploy to Kubernetes
+      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
       run: |
-        echo ${{ inputs.project-path }}
-        echo ${{ inputs.container-id }}
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: ${{ (endsWith(github.ref, '/development')) && (inputs.kubernetes == 'false') }}
+      if: ${{ (endsWith(github.ref, '/development' || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.cloudrun == 'true') }}
       id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
         service: ${{ inputs.container-id }}
         region: 'us-central1'
         image: us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
+    - name: Deploy to AppEngine
+      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
+      run: |
+        echo ${{ inputs.project-path }}
+        echo ${{ inputs.container-id }}
+        gcloud app deploy --appyaml=${{ inputs.project-path }}/app.yaml --image-url=us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} --version=${{ inputs.version }}
+      shell: bash
     - name: New Relic Staging Application Deployment Marker
       if: endsWith(github.ref, '/development')
       uses: newrelic/deployment-marker-action@v1.0.0
@@ -166,21 +174,6 @@ runs:
         accountId: ${{ inputs.new-relic-account-id }}
         applicationId: ${{ inputs.staging-new-relic-app-id }}
         revision: ${{ inputs.version }}
-    - name: Deploy Production
-      if: ${{ (endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
-      run: |
-        echo ${{ inputs.project-path }}
-        echo ${{ inputs.container-id }}
-        kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
-      shell: bash
-    - name: Deploy to Cloud Run
-      if: ${{ (endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false') }}
-      id: deploy-production
-      uses: google-github-actions/deploy-cloudrun@v0
-      with:
-        service: ${{ inputs.container-id }}
-        region: 'us-central1'
-        image: us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
     - name: New Relic Production Application Deployment Marker
       if: endsWith(github.ref, '/main')
       uses: newrelic/deployment-marker-action@v1.0.0
