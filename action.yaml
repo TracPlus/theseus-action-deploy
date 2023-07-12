@@ -155,12 +155,12 @@ runs:
       shell: bash
     # Apply kubernetes changes.
     - name: Deploy to Kubernetes
-      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'true') }}
       run: |
         kubectl apply -f ${{ inputs.project-path }}/Kubernetes/deployment.yaml
       shell: bash
     - name: Deploy to Cloud Run
-      if: ${{ (endsWith(github.ref, '/development' || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.cloudrun == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.cloudrun == 'true') }}
       id: deploy-staging
       uses: google-github-actions/deploy-cloudrun@v0
       with:
@@ -168,7 +168,7 @@ runs:
         region: 'us-central1'
         image: us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }}
     - name: Deploy to AppEngine
-      if: ${{ (endsWith(github.ref, '/development'|| endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development') || endsWith(github.ref, '/main')) && (inputs.kubernetes == 'false' && inputs.appengine == 'true') }}
       run: |
         echo ${{ inputs.project-path }}
         echo ${{ inputs.container-id }}
