@@ -180,13 +180,13 @@ runs:
         files: ${{ inputs.project-path }}/Kubernetes/deployment.yaml
         replacements: '@VERSION=${{ inputs.version }},@PROJECT=${{ env.GCP_PROJECT }},@IP=${{ inputs.gcp-staging-ip }},@REPLICAS=${{ inputs.staging-replicas }}'
     - name: Production AppEngine config transform
-      if: ${{ (endsWith(github.ref, '/main')) && (inputs.cloudrun == 'true') }}
+      if: ${{ (endsWith(github.ref, '/main')) && (inputs.appengine == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/app.yaml
         replacements: '@NOTIFICATIONS_CONNECTION_STRING=${{ inputs.notifications-connection-string }},@AMS_CONNECTION_STRING=${{ inputs.ams-connection-string }},@DISTRESS_CONNECTION_STRING=${{ inputs.distress-connection-string }},@TRACSTAR_CONNECTION_STRING=${{ inputs.tracstar-connection-string }}'
     - name: Staging AppEngine config transform
-      if: ${{ (endsWith(github.ref, '/development')) && (inputs.cloudrun == 'true') }}
+      if: ${{ (endsWith(github.ref, '/development')) && (inputs.appengine == 'true') }}
       uses: TracPlus/replace-action@master
       with:
         files: ${{ inputs.project-path }}/app.yaml
