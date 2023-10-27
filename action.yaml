@@ -117,7 +117,7 @@ runs:
     - name: List Files
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |-
-        ls
+        ls docker/
       shell: bash
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
