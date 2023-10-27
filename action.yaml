@@ -114,6 +114,11 @@ runs:
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ inputs.project-path }}
+    - name: List Files
+      if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
+      run: |-
+        ls -l
+      shell: bash
     - name: Set env to staging
       if: endsWith(github.ref, '/development')
       run: |-
