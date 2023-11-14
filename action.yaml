@@ -78,6 +78,10 @@ inputs:
     description: 'Name of the cluster to deploy the kubernetes deployment to.'
     required: false
     default: 'main'
+  zone:
+    description: 'The zone the cluster resources are running in.'
+    required: false
+    default: 'us-central1-a'
 runs:
   using: "composite"
   steps:
@@ -155,7 +159,7 @@ runs:
     - name: Set Cluster Credentials
       if: endsWith(github.ref, '/development') || endsWith(github.ref, '/main')
       run: |-
-        gcloud container clusters get-credentials ${{ inputs.cluster }} --zone us-central1-a --project ${{ env.GCP_PROJECT }}
+        gcloud container clusters get-credentials ${{ inputs.cluster }} --zone ${{ inputs.zone }} --project ${{ env.GCP_PROJECT }}
       shell: bash
     # Apply kubernetes changes.
     - name: Deploy to Kubernetes
