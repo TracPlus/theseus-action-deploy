@@ -183,7 +183,7 @@ runs:
         gcloud app deploy --appyaml=${{ inputs.project-path }}/app.yaml --image-url=us-central1-docker.pkg.dev/${{ env.GCP_PROJECT }}/tracstar/${{ inputs.container-id }}:${{ inputs.version }} --version=$NO_DOT_VERSION
       shell: bash
     - name: New Relic Staging Application Deployment Marker
-      if: endsWith(github.ref, '/development')
+      if: endsWith(github.ref, '/development') && inputs.staging-new-relic-app-id != ''
       uses: newrelic/deployment-marker-action@v1.0.0
       with:
         apiKey: ${{ inputs.new-relic-api-key }}
@@ -191,7 +191,7 @@ runs:
         applicationId: ${{ inputs.staging-new-relic-app-id }}
         revision: ${{ inputs.version }}
     - name: New Relic Production Application Deployment Marker
-      if: endsWith(github.ref, '/main')
+      if: endsWith(github.ref, '/main') && inputs.production-new-relic-app-id != ''
       uses: newrelic/deployment-marker-action@v1.0.0
       with:
         apiKey: ${{ inputs.new-relic-api-key }}
