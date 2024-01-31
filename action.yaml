@@ -37,9 +37,11 @@ inputs:
   staging-new-relic-app-id:
     description: 'ID of the application in New Relic.'
     required: false
+    default: ''
   production-new-relic-app-id:
     description: 'ID of the application in New Relic.'
     required: false
+    default: ''
   staging-replicas:
     description: 'Number of Kubernetes replicas.'
     default: '2'
